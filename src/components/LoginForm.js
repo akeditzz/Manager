@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
+import { View, Text, StyleSheet } from 'react-native'
 import { connect } from 'react-redux'
-import { emailChanged, passwordChanged } from '../actions'
-import { Button, Card, CardSection, Field } from './common'
+import { emailChanged, passwordChanged, loginUser } from '../actions'
+import { Button, Card, CardSection, Field, Spinner } from './common'
 
 class LoginForm extends Component {
 
@@ -11,6 +12,28 @@ class LoginForm extends Component {
 
     onPasswordChange(text) {
         this.props.passwordChanged(text)
+    }
+
+    onButtonPress() {
+        const { email, password } = this.props
+        this.props.loginUser({ email, password })
+    }
+
+    renderError() {
+        if (this.props.error) {
+            return <View>
+                <Text style={styles.errorTextStyle}>{this.props.error}</Text>
+            </View>
+        }
+    }
+
+    renderButton() {
+        if (this.props.loading) {
+            return <Spinner size='small' />
+        }
+
+        return <Button title="Log In" onPress={this.onButtonPress.bind(this)} />
+
     }
 
     render() {
@@ -35,21 +58,27 @@ class LoginForm extends Component {
                 />
             </CardSection>
 
+            {this.renderError()}
+
             <CardSection>
-                <Button
-                    title="Login"
-                />
+                {this.renderButton()}
             </CardSection>
 
         </Card>
     }
 }
 
-const mapsStateToProps = state => {
-    return {
-        email: state.auth.email,
-        password:state.auth.password
-    }
+const mapsStateToProps = ({ auth }) => {
+    const { email, password, error, loading } = auth
+    return { email, password, error, loading }
 }
 
-export default connect(mapsStateToProps, { emailChanged,passwordChanged })(LoginForm)
+const styles = StyleSheet.create({
+    errorTextStyle: {
+        fontSize: 20,
+        alignSelf: 'center',
+        color: 'red'
+    }
+})
+
+export default connect(mapsStateToProps, { emailChanged, passwordChanged, loginUser })(LoginForm)
